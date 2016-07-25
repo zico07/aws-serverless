@@ -1,0 +1,177 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/riot/2.3.18/riot+compiler.js'></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"   integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="   crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <style type="text/css">
+    </style>
+    <title>セミナー管理</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <p class="navbar-text" style="font-size:16px;">セミナー管理</p>
+        </div>
+      </div><!-- /.container-fluid -->
+    </nav>
+    <div class="modal" id="modal-dialog" tabindex="-1">
+      <div class="modal-dialog">
+          <div class="modal-content">
+            <editform></editform>
+            <script type="riot/tag">
+            <editform>
+            <div class="modal-body">
+            <input type="hidden" value="{lineid}" id="lineid">
+              <div class="row">
+                <div class="col-xs-10 col-sm-10 col-md-10">
+                会社名<input type="text" id="company_name" class="form-control" placeholder="会社名" aria-describedby="basic-addon1">
+                </div>
+              </div>
+              <div class="row">
+                  <div class="col-xs-10 col-sm-10 col-md-10">
+                会社名カナ<input type="text" id="company_kana" class="form-control" placeholder="会社名カナ" aria-describedby="basic-addon1">
+                </div>
+              </div>
+              <div class="row">
+                  <div class="col-xs-10 col-sm-10 col-md-10">
+                氏名<input type="text" id="staff_name" class="form-control" placeholder="会社名カナ" aria-describedby="basic-addon1">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                <button onclick='{regist}' class="btn btn-primary">保存</button>
+            </div>
+
+            $('#modal-dialog').on('show.bs.modal', function (event) {
+              var button = $(event.relatedTarget);
+              var c_name = button.data('company_name');
+              var c_kana = button.data('company_kana');
+              var s_name = button.data('staff_name');
+              $('#company_name').val(c_name);
+              $('#company_kana').val(c_kana);
+              $('#staff_name').val(s_name);
+              self.lineid = button.data('id');
+              //alert(self.lineid);
+            })
+            this.regist = function(e) {
+              var param ={
+                        "staff_name":$('#staff_name').val(),
+                        "company_kana":$('#company_kana').val(),
+                        "company_name":$('#company_name').val()
+             };
+             if(self.lineid != undefined){
+               param.id= String(self.lineid);
+             }
+              fetch('https://xxxxxxxx.execute-api.ap-northeast-1.amazonaws.com/seminar/editdata', {
+                    headers: { 'x-api-key': 'xxxxxx'},
+                    method: 'POST',
+                    body: JSON.stringify(param)
+              }).then(function(response) {
+                alert('登録しました');
+                $('#modal-dialog').modal('hide');
+                riot.mount('*');
+              });
+            }
+            </editform>
+            </script>
+
+          </div>
+      </div>
+  </div>
+    <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+              <button class="btn btn-primary" data-toggle="modal" data-target="#modal-dialog">新規</button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12" style="margin-top:10px;">
+                  <lines></lines>
+                  <script type="riot/tag">
+                    <lines>
+                    <input type="hidden" value="{count}" id="linecount">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>会社名</th>
+                          <th>会社名カナ</th>
+                          <th>氏名</th>
+                          <th>第1講座参加</th>
+                          <th>第2講座参加</th>
+                          <th>第3講座参加</th>
+                          <th>第4講座参加</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr each={ items }>
+                          <td><span if={company_name != "[object HTMLInputElement]"}>{company_name}</span></td>
+                          <td><span if={company_kana != "[object HTMLInputElement]"}>{company_kana}</span></td>
+                          <td><span if={staff_name != "[object HTMLInputElement]"}>{staff_name}</span></td>
+                          <td><span if={join1} class="glyphicon glyphicon-ok" aria-hidden="true" style="color:lime;"></span></td>
+                          <td><span if={join2} class="glyphicon glyphicon-ok" aria-hidden="true" style="color:lime;"></span></td>
+                          <td><span if={join3} class="glyphicon glyphicon-ok" aria-hidden="true" style="color:lime;"></span></td>
+                          <td><span if={join4} class="glyphicon glyphicon-ok" aria-hidden="true" style="color:lime;"></span></td>
+                          <td>
+                            <button type="button" class="btn btn-default" aria-label="Left Align" data-toggle="modal" data-target="#modal-dialog" data-id={ id } data-company_name={ company_name } data-company_kana={ company_kana } data-staff_name={ staff_name }>
+                              <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn btn-default" aria-label="Left Align" onclick="{execdel}" data-id={ id }>
+                              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                      var self = this
+                      this.items;
+                      fetch('https://xxxxxxxx.execute-api.ap-northeast-1.amazonaws.com/seminar/getdata',{headers: { 'x-api-key': 'xxxxxxxxxx' }})
+                      .then(function ( data ) {
+                          return data.json()
+                      })
+                      .then( function ( json ) {
+                        //会社名でソート
+                        if(json['Items'] != null && json['Items'].length > 0){
+                            json['Items'].sort(function(a,b){
+                                if(a.company_name<b.company_name) return -1;
+                                if(a.company_name > b.company_name) return 1;
+                                return 0;
+                            });
+                        }
+                        this.items = json['Items'];
+                        self.count = json['Count'];
+                          self.update();
+                      })
+                      this.execdel= function(e) {
+                        myRet = confirm("削除します。よろしいですか？");
+                        if(myRet == true){
+                          var param ={
+                                    "id":String(this.id)
+                          };
+                          fetch('https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/seminar/deletedata', {
+                                headers: { 'x-api-key': 'xxxxxxx'},
+                                method: 'POST',
+                                body: JSON.stringify(param)
+                          }).then(function(response) {
+                            alert('削除しました');
+                            riot.mount('*');
+                          });
+                        }
+                      }
+                    </lines>
+                  </script>
+            </div>
+    </div>
+  </div>
+    <script>
+      riot.mount('*');
+    </script>
+    </body>
+</html>
